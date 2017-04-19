@@ -25,3 +25,7 @@ pip install -r requirements.txt
 python app.py
 ```
 
+## test
+
+chrome http://127.0.0.1:8000/newtask
+
