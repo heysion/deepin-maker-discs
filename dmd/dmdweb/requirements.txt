@@ -1,4 +1,5 @@
 #redis
+peewee
 tornado
 #pyuv
 psycopg2
