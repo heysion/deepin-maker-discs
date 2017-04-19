@@ -12,7 +12,16 @@ python manager.py --initdb
 
 ```
 git clone https://github.com/heysion/deepin-maker-discs.git
-cd deepin-maker-discs/dmd
+cd deepin-maker-discs
+virtualenv -p python3 env
+source  env/bin/activate
+cd /tmp
+git clone https://github.com/heysion/deepin-auto-build.git
+cd deepin-auto-build
+python setup.py install
+cd -
+cd dmd/dmdweb/
+pip install -r requirements.txt
 python app.py
 ```
 
