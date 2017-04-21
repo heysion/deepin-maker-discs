@@ -111,7 +111,7 @@ class TaskList(WebBase):
     def get(self):
         req_data = { k: self.get_argument(k) for k in self.request.arguments }
         tasklist = self.get_task_for_all()
-        print(tasklist)
+        #print(tasklist)
         self.render("tasklist.html",tasklist=tasklist)
 
     def get_task_for_all(self):

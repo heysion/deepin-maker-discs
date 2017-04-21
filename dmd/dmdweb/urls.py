@@ -8,10 +8,13 @@
 '''
 
 from taskctrl import TaskNew ,TaskInfo ,TaskList
+from pubctrl import PubIndex
+
 views = [
     (r'/newtask', TaskNew),
     (r'/task/list', TaskList),
-    (r'/task/([0-9]+)', TaskInfo),
+#    (r'/task/([0-9]+)', TaskInfo),
+    (r'/pub', PubIndex),
 #    (r'/task/list', TaskListHandler),
 #    (r'/task/([0-9]+)/info', TaskInfoHandler), # /task/<id>/info
 #    (r'/task/([0-9]+)/result', TaskResultHandler), # /task/<id>/result
