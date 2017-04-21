@@ -5,6 +5,7 @@ deepin build  maker discs tools  platform
 ```
 git clone https://github.com/heysion/deepin-maker-discs.git
 cd deepin-maker-discs/dmd
+python manager.py --initdir
 python manager.py --initdb
 ```
 

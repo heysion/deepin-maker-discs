@@ -44,8 +44,8 @@ def opt_parse():
     parser.add_argument("--initdb",dest="initdb",action="store_true",
                                 help="init db")
 
-    parser.add_argument("--initall",dest="initall",action="store_true",
-                                help="init all")
+    parser.add_argument("--initdir",dest="initdir",action="store_true",
+                                help="init dir")
 
     return parser.parse_args()
 
@@ -55,6 +55,6 @@ if __name__ == "__main__":
     opt = opt_parse()
     if opt.initdb:
         initdb()
-    if opt.initall:
-        #initdb()
+
+    if opt.initdir:
         initdir()
