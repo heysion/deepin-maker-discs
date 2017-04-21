@@ -9,6 +9,23 @@
 
 import argparse
 import sys
+import settings
+import os
+
+def _mkdir(dir_path):
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+        print("create :{} directory".format(dir_path))
+
+def initdir():
+    _mkdir(settings.DMD_PATH)
+    _mkdir(settings.DMD_OUTPUT)
+    _mkdir(settings.DMD_UPLOAD)
+    _mkdir(settings.DMD_CACHE)
+    _mkdir(settings.DMD_TASK_PATH)
+    _mkdir(os.path.dirname(settings.DMD_DEBIAN_CD_PATH))
+    pass
+           
 
 def initdb():
     from dab.db import models
@@ -26,6 +43,10 @@ def opt_parse():
                         default="dab.db")
     parser.add_argument("--initdb",dest="initdb",action="store_true",
                                 help="init db")
+
+    parser.add_argument("--initall",dest="initall",action="store_true",
+                                help="init all")
+
     return parser.parse_args()
 
     
@@ -34,3 +55,6 @@ if __name__ == "__main__":
     opt = opt_parse()
     if opt.initdb:
         initdb()
+    if opt.initall:
+        #initdb()
+        initdir()
