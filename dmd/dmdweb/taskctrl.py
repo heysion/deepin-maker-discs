@@ -11,6 +11,7 @@ import os
 import shutil
 import time
 import json
+import subprocess
 import functools
 import tornado.gen
 from tornado.concurrent import run_on_executor
@@ -20,6 +21,7 @@ from peewee import SqliteDatabase
 from dmd.dmdweb import WebBase
 from dab.db.models import MkisoInfo
 from dmd import settings
+
 #FIXME
 print("#FIXME")
 db = SqliteDatabase("../peewee.db")
@@ -34,11 +36,6 @@ class TaskNew(WebBase):
 
     def get(self):
         self.render("task.html")
-        # task_items = [
-        #     {"id":1,"name":"deepin-auto-build","createtime":"2017","state":"success","resultinfo":"info"},
-        #     {"id":2,"name":"deepin-auto-build","createtime":"2017","state":"success","resultinfo":"info"}
-        # ]
-        # self.render("task.html", tasklist=task_items)
         pass
     
     @tornado.web.asynchronous
@@ -50,31 +47,33 @@ class TaskNew(WebBase):
         if not ("isoname" in req_data  and req_data["isoname"] is not None) :
             req_data["isoname"] = "deepin-server"
         tornado.ioloop.IOLoop.instance().add_callback(functools.partial(self.call_mkiso,req_data))
-        print(req_data)
-        self.write(req_data)
-        self.write(self.request.body)
-        #self.render("task.html")
+        # print(req_data)
+        # self.write(req_data)
+        # self.write(self.request.body)
+        self.render("task.html")
 
     @tornado.concurrent.run_on_executor(executor='_thread_pool')
     def call_mkiso(self,data):
         task_instance = self.save_task(data)
         if task_instance :
             self.init_task_work(task_instance)
-        print("call work")
+        cmd = "{} -c {}/config.json".format(settings.DMD_TOOLS_BIN,self.task_work_path)
+        print(cmd)
+        #subprocess.call(cmd)
         time.sleep(5)
 
     def init_task_work(self,task):
-        task_work_path = "{}/{}".format(settings.DMD_PATH,task.id)
-        if not os.path.exists(task_work_path):
-            os.mkdir(task_work_path)
+        self.task_work_path = "{}/{}".format(settings.DMD_PATH,task.id)
+        if not os.path.exists(self.task_work_path):
+            os.mkdir(self.task_work_path)
         if task.includelist:
-            with open('{}/include.list'.format(task_work_path), 'a') as the_file:
+            with open('{}/include.list'.format(self.task_work_path), 'a') as the_file:
                 the_file.write(task.includelist)
         if task.excludelist:
-            with open('{}/exclude.list'.format(task_work_path), 'a') as the_file:
+            with open('{}/exclude.list'.format(self.task_work_path), 'a') as the_file:
                 the_file.write(task.excludelist)
-        with open('{}/config.json'.format(task_work_path), 'a') as the_file:
-            config_data = {"name":task.isoname,
+        with open('{}/config.json'.format(self.task_work_path), 'a') as the_file:
+            self.config_data = {"name":task.isoname,
                            "tag":"15.1",
                            "arch":"mips64el",
                            "task":task.id,
@@ -82,10 +81,10 @@ class TaskNew(WebBase):
                            "include":"include.list",
                            "exclude":"exclude.list",
                            "output":settings.DMD_OUTPUT}
-            the_file.write(json.dumps(config_data))
-        preseed_orig = "{}/{}".format(settings.DMD_UPLOAD,task.preseed_config)
-        if os.path.exists(preseed_orig):
-            shutil.move(preseed_orig,"{}/preseed.cfg".format(task_work_path))
+            the_file.write(json.dumps(self.config_data))
+        self.preseed_orig = "{}/{}".format(settings.DMD_UPLOAD,task.preseed_config)
+        if os.path.exists(self.preseed_orig):
+            shutil.move(self.preseed_orig,"{}/preseed.cfg".format(self.task_work_path))
 
     def save_task(self,data):
         task = MkisoInfo.select(MkisoInfo.isoname).where(MkisoInfo.isoname==data["isoname"])
@@ -102,4 +101,30 @@ class TaskNew(WebBase):
         
 
 class TaskInfo(WebBase):
+    pass
+
+class TaskList(WebBase):
+    def get(self):
+        req_data = { k: self.get_argument(k) for k in self.request.arguments }
+        tasklist = self.get_task_for_all()
+        print(tasklist)
+        self.render("tasklist.html",tasklist=tasklist)
+
+    def get_task_for_all(self):
+        task_data = MkisoInfo.select(MkisoInfo.id,MkisoInfo.isoname,
+                                     MkisoInfo.create_time,MkisoInfo.status)
+        taskinfo = []
+        if task_data :
+            for task in task_data:
+                taskinfo.append({"id":task.id,"name":task.isoname,
+                                 "createtime":task.create_time,"state":task.status})
+        print(taskinfo)
+        return taskinfo
+
+    def get_task_for_name(self,name):
+        task = MkisoInfo.select(MkisoInfo.isoname).where(MkisoInfo.isoname==name)
+        if not task :
+            pass
+        return task
+
     pass

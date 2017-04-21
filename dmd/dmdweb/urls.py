@@ -7,10 +7,10 @@
 @license: GPLv3
 '''
 
-from taskctrl import TaskNew , TaskInfo
+from taskctrl import TaskNew ,TaskInfo ,TaskList
 views = [
     (r'/newtask', TaskNew),
-    (r'/task', TaskNew),
+    (r'/task/list', TaskList),
     (r'/task/([0-9]+)', TaskInfo),
 #    (r'/task/list', TaskListHandler),
 #    (r'/task/([0-9]+)/info', TaskInfoHandler), # /task/<id>/info
