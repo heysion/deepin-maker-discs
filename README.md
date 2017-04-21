@@ -19,6 +19,7 @@ source  env/bin/activate
 cd /tmp
 git clone https://github.com/heysion/deepin-auto-build.git
 cd deepin-auto-build
+git checkout heysion@v2
 python setup.py install
 cd -
 cd dmd/dmdweb/
