@@ -57,34 +57,38 @@ class TaskNew(WebBase):
         task_instance = self.save_task(data)
         if task_instance :
             self.init_task_work(task_instance)
-        cmd = "{} -c {}/config.json".format(settings.DMD_TOOLS_BIN,self.task_work_path)
+        cmd = "{} -c {}/config.json".format(settings.DMD_TOOLS_BIN,self.task_work_base)
         print(cmd)
         #subprocess.call(cmd)
         time.sleep(5)
 
     def init_task_work(self,task):
-        self.task_work_path = "{}/{}".format(settings.DMD_PATH,task.id)
-        if not os.path.exists(self.task_work_path):
-            os.mkdir(self.task_work_path)
+        self.task_work_base = "{}/{}".format(settings.DMD_TASK_PATH,task.id)
+        if not os.path.exists(self.task_work_base):
+            os.mkdir(self.task_work_base)
         if task.includelist:
-            with open('{}/include.list'.format(self.task_work_path), 'a') as the_file:
+            with open('{}/include.list'.format(self.task_work_base), 'a') as the_file:
                 the_file.write(task.includelist)
         if task.excludelist:
-            with open('{}/exclude.list'.format(self.task_work_path), 'a') as the_file:
+            with open('{}/exclude.list'.format(self.task_work_base), 'a') as the_file:
                 the_file.write(task.excludelist)
-        with open('{}/config.json'.format(self.task_work_path), 'a') as the_file:
+        with open('{}/config.json'.format(self.task_work_base), 'a') as the_file:
             self.config_data = {"name":task.isoname,
-                           "tag":"15.1",
-                           "arch":"mips64el",
-                           "task":task.id,
-                           "preseed":"preseed.cfg",
-                           "include":"include.list",
-                           "exclude":"exclude.list",
-                           "output":settings.DMD_OUTPUT}
+                                "tag":"15.1",
+                                "arch":"mips64el",
+                                "task":task.id,
+                                "workbase":self.task_work_base,
+                                "preseed":"preseed.cfg",
+                                "include":"include.list",
+                                "exclude":"exclude.list",
+                                "output":settings.DMD_OUTPUT,
+                                "cache":settings.DMD_CACHE,
+                                "repo":"{}/{}".format(settings.DMD_REPO_PRE,"mips64el"),
+                                "debian_cd":settings.DMD_DEBIAN_CD_PATH}
             the_file.write(json.dumps(self.config_data))
         self.preseed_orig = "{}/{}".format(settings.DMD_UPLOAD,task.preseed_config)
         if os.path.exists(self.preseed_orig):
-            shutil.move(self.preseed_orig,"{}/preseed.cfg".format(self.task_work_path))
+            shutil.move(self.preseed_orig,"{}/preseed.cfg".format(self.task_work_base))
 
     def save_task(self,data):
         task = MkisoInfo.select(MkisoInfo.isoname).where(MkisoInfo.isoname==data["isoname"])
@@ -118,7 +122,6 @@ class TaskList(WebBase):
             for task in task_data:
                 taskinfo.append({"id":task.id,"name":task.isoname,
                                  "createtime":task.create_time,"state":task.status})
-        print(taskinfo)
         return taskinfo
 
     def get_task_for_name(self,name):
